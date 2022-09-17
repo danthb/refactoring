@@ -1,10 +1,22 @@
 import invoices from "../data/invoices.json";
-import plays from "../data/plays.json";
-import { Invoice, Play } from "./types";
+import _plays from "../data/plays.json";
+import { Invoice, Performance } from './types';
+interface Play{
+  name: string;
+  type: string;
+}
+interface Plays {
+  [key: string]: Play;
+}
+const plays = _plays as Plays;
 
-function amountFor(aPerformance: any, play: any) {
+function playFor(aPerformance: Performance) {
+    return plays[aPerformance.playID];
+}
+
+function amountFor(aPerformance: Performance) {
   let result = 0;
-  switch (play.type) {
+  switch (playFor(aPerformance).type) {
     case "tragedy":
       result = 40000;
       if (aPerformance.audience > 30) {
@@ -19,12 +31,13 @@ function amountFor(aPerformance: any, play: any) {
       result += 300 * aPerformance.audience;
       break;
     default:
-      throw new Error(`unknown type: ${play.type}`);
+      throw new Error(`unknown type: ${playFor(aPerformance).type}`);
   }
   return result;
 }
 
-function statement(invoice:Invoice, plays: any) {
+
+function statement(invoice:Invoice, plays: Plays) {
   let totalAmount = 0;
   let volumeCredits = 0;
   let result = `Statement for ${invoice.customer}\n`;
@@ -34,7 +47,7 @@ function statement(invoice:Invoice, plays: any) {
     minimumFractionDigits: 2,
   }).format;
   for (let aPerformance of invoice.performances) {
-    let thisAmount= amountFor(aPerformance, playFor(aPerformance));
+    let thisAmount= amountFor(aPerformance);
     // add volume credits
     volumeCredits += Math.max(aPerformance.audience - 30, 0);
     // add extra credit for every ten comedy attendees
@@ -48,10 +61,6 @@ function statement(invoice:Invoice, plays: any) {
   }
   result += `Amount owed is ${format(totalAmount / 100)}\n`;
   result += `You earned ${volumeCredits} credits\n`;
-
-  function playFor(aPerformance:any){
-    return plays[aPerformance.playID];
-  }
 
   return result;
 }
