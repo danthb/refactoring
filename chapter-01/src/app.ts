@@ -1,6 +1,6 @@
 import invoices from "../data/invoices.json";
 import plays from "../data/plays.json";
-import { Invoice } from "./types";
+import { Invoice, Play } from "./types";
 
 function amountFor(aPerformance: any, play: any) {
   let result = 0;
@@ -34,7 +34,7 @@ function statement(invoice:Invoice, plays: any) {
     minimumFractionDigits: 2,
   }).format;
   for (let aPerformance of invoice.performances) {
-    const play = plays[aPerformance.playID];
+    const play = playFor(aPerformance);
     let thisAmount= amountFor(aPerformance, play);
     // add volume credits
     volumeCredits += Math.max(aPerformance.audience - 30, 0);
@@ -49,8 +49,13 @@ function statement(invoice:Invoice, plays: any) {
   }
   result += `Amount owed is ${format(totalAmount / 100)}\n`;
   result += `You earned ${volumeCredits} credits\n`;
+  
+  function playFor(aPerformance:any){
+    return plays[aPerformance.playID];
+  }
+
   return result;
 }
 
-const invoice:Invoice = invoices[0];
+const invoice: Invoice = invoices[0];
 console.log(statement(invoice, plays));
