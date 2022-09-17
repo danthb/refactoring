@@ -141,3 +141,4 @@ dist
 
 # ignore js files in all folders
 *.js
+*.js.map
